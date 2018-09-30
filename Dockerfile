@@ -46,11 +46,11 @@ make && \
 make install
 
 RUN  if [ "$APP_ENV" = "local" ] ; then \
-mkdir -p /etc/ssl/live/streaming.psq.com && \
+mkdir -p /etc/letsencrypt/live/psqstream.neostore.net && \
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 -subj "/C=AR/ST=BuenosAires/L=BuenosAires/O=PSQ/OU=IT Department/CN=${SERVER_NAME}" \
--keyout /etc/ssl/live/streaming.psq.com/privkey.pem \
--out /etc/ssl/live/streaming.psq.com/fullchain.pem; \
+-keyout /etc/letsencrypt/live/psqstream.neostore.net/privkey.pem \
+-out /etc/letsencrypt/live/psqstream.neostore.net/fullchain.pem; \
 fi
 
 # nginx config files
@@ -88,8 +88,15 @@ RUN chmod 777 /usr/local/bin/docker-entrypoint.sh \
     && ln -s /usr/local/bin/docker-entrypoint.sh /
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["/bin/bash"]
+
+# forward request and error logs to docker log collector
+RUN ln -sf /dev/stdout /var/log/nginx/access.log \
+	&& ln -sf /dev/stderr /var/log/nginx/error.log
 
 EXPOSE 443
 EXPOSE 80
 EXPOSE 1935
+
+STOPSIGNAL SIGTERM
+
+CMD ["nginx", "-g", "daemon off;"]

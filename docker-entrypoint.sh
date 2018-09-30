@@ -2,6 +2,6 @@
 set -e
 set -x
 
-service nginx start
+#service nginx start
 
 exec "$@";

@@ -25,7 +25,7 @@ docker build -t psq-streaming-server \
 
 ```
 docker run --name psq-streaming-server1 \
--p 8080:80 -p 8081:443 -p 1935:1935 -it \
+-p 8080:80 -p 8081:443 -p 1935:1935 \
 --net=docker-bridge \
 -d psq-streaming-server
 ```
