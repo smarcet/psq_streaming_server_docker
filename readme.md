@@ -25,6 +25,14 @@ docker build -t psq-streaming-server \
 
 ## prod
 
+```
+docker build -t psq-streaming-server \
+--build-arg APP_ENV=production \
+--build-arg SERVER_NAME=psqstream.neostore.net \
+--build-arg PSQ_API_HOST=psqapi.neostore.net \
+--add-host 127.0.0.1:192.168.0.1  . 
+```
+
 ### create ssl certs
 ````
 docker run -it --rm \
