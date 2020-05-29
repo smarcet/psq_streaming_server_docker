@@ -1,4 +1,4 @@
-# Docker for PSQ Streaming Serve
+# Docker for PSQ Streaming Server
 
 # install docker
 
