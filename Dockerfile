@@ -16,7 +16,7 @@ ENV SERVER_NAME=$SERVER_NAME
 ENV PSQ_API_HOST=$PSQ_API_HOST
 ENV RTMP_NGINX_MODULE_HOME=$RTMP_NGINX_MODULE_HOME
 ENV NGINX_HOME=$NGINX_HOME
-
+ENV STORAGE_HOME=/mnt/storage
 # base packages
 
 RUN apt-get update && \
@@ -46,11 +46,11 @@ make && \
 make install
 
 RUN  if [ "$APP_ENV" = "local" ] ; then \
-mkdir -p /etc/letsencrypt/live/psqstream.neostore.net && \
+mkdir -p /etc/letsencrypt/live/$SERVER_NAME && \
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
--subj "/C=AR/ST=BuenosAires/L=BuenosAires/O=PSQ/OU=IT Department/CN=${SERVER_NAME}" \
--keyout /etc/letsencrypt/live/psqstream.neostore.net/privkey.pem \
--out /etc/letsencrypt/live/psqstream.neostore.net/fullchain.pem; \
+-subj "/C=US/ST=Texas/L=Austin/O=OpenStack/OU=IT Department/CN=${SERVER_NAME}" \
+-keyout /etc/letsencrypt/live/$SERVER_NAME/privkey.pem \
+-out /etc/letsencrypt/live/$SERVER_NAME/fullchain.pem; \
 fi
 
 # nginx config files
@@ -65,18 +65,18 @@ RUN mkdir $NGINX_HOME/sites-available && \
 COPY nginx/nginx.conf $NGINX_HOME/nginx.conf
 COPY nginx/ext/rtmp-server.conf $NGINX_HOME/ext/rtmp-server.conf
 COPY nginx/snippets/letsencrypt.conf $NGINX_HOME/snippets/letsencrypt.conf
-COPY nginx/sites-available/streaming.psq.com.conf $NGINX_HOME/sites-available/streaming.psq.com
+COPY nginx/sites-available/site.conf $NGINX_HOME/sites-available/$SERVER_NAME.conf
 
 SHELL ["/bin/bash", "-c"]
 
 RUN sed -i "s/@SERVER_NAME/$SERVER_NAME/g" $NGINX_HOME/ext/rtmp-server.conf
 RUN sed -i "s/@PSQ_API_HOST/$PSQ_API_HOST/g" $NGINX_HOME/ext/rtmp-server.conf
 
-RUN sed -i "s/@SERVER_NAME/$SERVER_NAME/g" $NGINX_HOME/sites-available/streaming.psq.com
+RUN sed -i "s/@SERVER_NAME/$SERVER_NAME/g" $NGINX_HOME/sites-available/$SERVER_NAME.conf
 RUN RTMP_NGINX_MODULE_HOME_1=${RTMP_NGINX_MODULE_HOME////\\/} && \
 echo $RTMP_NGINX_MODULE_HOME_1 && \
-sed -i "s/@RTMP_NGINX_MODULE_HOME/$RTMP_NGINX_MODULE_HOME_1/g" $NGINX_HOME/sites-available/streaming.psq.com
-RUN ln -s $NGINX_HOME/sites-available/streaming.psq.com $NGINX_HOME/sites-enabled/streaming.psq.com
+sed -i "s/@RTMP_NGINX_MODULE_HOME/$RTMP_NGINX_MODULE_HOME_1/g" $NGINX_HOME/sites-available/$SERVER_NAME.conf
+RUN ln -s $NGINX_HOME/sites-available/$SERVER_NAME.conf $NGINX_HOME/sites-enabled/$SERVER_NAME.conf
 
 RUN git clone https://github.com/Fleshgrinder/nginx-sysvinit-script.git && \
 cd nginx-sysvinit-script && \
@@ -92,6 +92,10 @@ ENTRYPOINT ["docker-entrypoint.sh"]
 # forward request and error logs to docker log collector
 RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 	&& ln -sf /dev/stderr /var/log/nginx/error.log
+
+VOLUME $STORAGE_HOME
+
+RUN chown www-data:www-data $STORAGE_HOME
 
 EXPOSE 443
 EXPOSE 80
