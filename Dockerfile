@@ -71,8 +71,10 @@ SHELL ["/bin/bash", "-c"]
 
 RUN sed -i "s/@SERVER_NAME/$SERVER_NAME/g" $NGINX_HOME/ext/rtmp-server.conf
 RUN sed -i "s/@PSQ_API_HOST/$PSQ_API_HOST/g" $NGINX_HOME/ext/rtmp-server.conf
+RUN sed -i "s/@STORAGE_HOME/$STORAGE_HOME/g" $NGINX_HOME/ext/rtmp-server.conf
 
 RUN sed -i "s/@SERVER_NAME/$SERVER_NAME/g" $NGINX_HOME/sites-available/$SERVER_NAME.conf
+RUN sed -i "s/@STORAGE_HOME/$STORAGE_HOME/g" $NGINX_HOME/sites-available/$SERVER_NAME.conf
 RUN RTMP_NGINX_MODULE_HOME_1=${RTMP_NGINX_MODULE_HOME////\\/} && \
 echo $RTMP_NGINX_MODULE_HOME_1 && \
 sed -i "s/@RTMP_NGINX_MODULE_HOME/$RTMP_NGINX_MODULE_HOME_1/g" $NGINX_HOME/sites-available/$SERVER_NAME.conf
